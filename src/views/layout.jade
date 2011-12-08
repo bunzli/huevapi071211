@@ -1,6 +1,11 @@
 !!!
 html
   head
+    meta(name="apple-mobile-web-app-capable", content="yes")
+    meta(name="viewport", content="width=device-width; initial-scale=1.0; maximum-scale=1.0; user-scalable=no;")
     title= title
     link(rel='stylesheet', href='/stylesheets/style.css')
+    script(src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js")
+    
   body!= body
+  script(src="/javascript/joystick.js")

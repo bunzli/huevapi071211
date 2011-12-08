@@ -32,5 +32,11 @@ app.configure('production', function(){
 
 app.get('/', routes.index);
 
+app.get('/joystick', function(req, res){
+    res.render('joystick.jade', {
+        title: "El joystick"
+    });
+});
+
 app.listen(3000);
 console.log("Express server listening on port %d in %s mode", app.address().port, app.settings.env);

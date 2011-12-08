@@ -1,8 +1,22 @@
-body {
-  padding: 50px;
-  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+.arrow {
+    width: 33%;
+    height: 33%;
+    background-color: blue;
 }
 
-a {
-  color: #00B7FF;
+#up, #down {
+    display: block;
+    margin-left: 33%;
+}
+
+#right {
+    margin-left: 33%;
+}
+
+.action {
+    width: 20%;
+    height: 25%;
+    margin-top: 30%;
+    margin-left: 25%;
+    background-color: green;
 }
