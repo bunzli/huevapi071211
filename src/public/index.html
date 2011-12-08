@@ -1,0 +1,114 @@
+<!--
+To change this template, choose Tools | Templates
+and open the template in the editor.
+-->
+<!DOCTYPE html>
+<html>
+    <head>
+	<title></title>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<script type="text/javascript" src="http://code.jquery.com/jquery-1.7.1.min.js"></script>
+	<style>
+	    body {
+		margin: 0;
+	    }
+	    #canvas {
+		width: 100%;
+		height: 100%;
+		z-index: 1000;
+		position: absolute;
+		background: black;
+		color: white;
+		overflow: hidden;
+	    }
+	    #character {
+		position: absolute;
+		z-index: 1002;
+	    }
+	    #rainbow {
+		position: absolute;
+		z-index: 1001;
+	    }
+	    #debug {
+		color: white;
+		text-align: right;
+	    }
+	</style>
+	<script>
+	    $(function() {
+		var JS=(function() {
+		    var js=function() {  
+		    };
+
+		    js.speed=10;
+		    js.tickDelay=25;
+		    js.characterXY={x:0,y:0};
+		    js.keys={};
+		    js.character={};
+		    js.ticks=0;
+
+		    js.init=function() {
+			// init fps timer
+			setInterval(function() {js.tick()}, js.tickDelay);
+			setInterval(function() {js.spriteDraw()}, 100)
+
+			// add event handlers
+			$(document).keydown(function(e) {
+			    js.keys[e.keyCode]=true;
+			});
+			$(document).keyup(function(e) {
+			    js.keys[e.keyCode]=false;
+			});
+
+			js.character=$('#character');
+		    };
+		    js.addSprite = function() {
+			alert('sprite');
+		    };
+		    js.spriteDraw = function() {
+			if(js.drawSprite) {
+			    $('#rainbow')
+			    .clone()
+			    .css(js.drawSprite)
+			    .fadeIn('fast')
+			    .appendTo('#canvas');
+			}
+			js.drawSprite=false;
+		    };
+		    js.tick = function() {
+			/*
+			 * left arrow: 37 
+			 * up arrow: 38
+			 * right arrow: 39
+			 * down arrow: 40
+			 */
+
+			if(js.keys[32]) js.drawSprite={top:js.characterXY.x+'px',left:js.characterXY.y+'px'};
+			if(js.keys[37]) js.characterXY.y-=js.speed;
+			if(js.keys[38]) js.characterXY.x-=js.speed;
+			if(js.keys[39]) js.characterXY.y+=js.speed;
+			if(js.keys[40]) js.characterXY.x+=js.speed;
+
+			js.character.css({top:js.characterXY.x+'px',left:js.characterXY.y+'px'});
+			$('#debug').html('(X: '+js.characterXY.x+ ', Y: '+js.characterXY.y+(js.drawSprite?', BUTTON':'')+') Ticks: '+js.ticks);
+			js.ticks++;
+		    };
+
+		    return js;
+		})();
+		JS.init();
+	    });	    
+	</script>
+    </head>
+    <body>
+	<div id="canvas">
+	    <div id="debug"></div>
+	    <div id="character">
+		<img src="http://nyan-cat.com/images/nyan-cat.gif" width="50" />
+	    </div>
+	    <div id="rainbow" style="display: none;">
+		<img src="http://realtors.friedlander2.com/images/RainbowFlagw.jpg" />
+	    </div>
+	</div>
+    </body>
+</html>
