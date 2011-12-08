@@ -1,0 +1,22 @@
+<html>
+<head>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+	var socket = io.connect('http://localhost/api/control');
+	socket.on('connect', function () {
+		socket.emit('join', document.location.hash.substr(1));
+		socket.on('join ok', function (player_id) {
+			socket.emit('action','move_up',1);
+			socket.emit('action','move_down',1);
+			socket.emit('action','button_A',1);
+			socket.emit('action','button_B',1);
+		});
+		socket.on('join failed', function () {
+			alert('cuek!');
+		});
+	});
+</script>
+</head>
+<body>
+</body>
+</html>

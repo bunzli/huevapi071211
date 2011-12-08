@@ -1,0 +1,22 @@
+<html>
+<head>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+	var socket = io.connect('http://localhost/api/game');
+	socket.on('connect', function () {
+		socket.emit('create', 'test', 6);
+		socket.on('create ok', function (app_id) {
+			alert(app_id);
+		});
+		socket.on('player join', function (player_id) {
+			alert(player_id);		
+		});
+		socket.on('player action', function (player_id, action, value) {
+			alert(action);
+		});
+	});
+</script>
+</head>
+<body>
+</body>
+</html>
