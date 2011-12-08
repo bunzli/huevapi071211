@@ -43,18 +43,32 @@ io.of('/api/game')
 	var app_id = null;
 	socket.on('create',function(name, max) {
 		if(!app_id) {
-			console.log("Creating new app with max players = " + max);
+			console.log("Creating new app with max collabs = " + max);
 			app_id = 'app_' + gcount++;
-			games[app_id] = { socket : socket, players : 0, id : 1, max : max };
+			games[app_id] = { 
+				id: app_id, 
+				socket: socket, 
+				players: 0, 
+				next_id : 1, 
+				max: max 
+			};
 			socket.emit('create ok', app_id);
 		} else socket.emit('create failed');
 	});	
-	socket.on('delete',function(from,msg) {
+	socket.on('delete',function() {
 		if(app_id) {
 			console.log("Deleting app " + app_id);
-			delete games['app_id'];
+			delete games[app_id];
+			// TODO: Somehow notify players
 			socket.emit('delete ok');
 		} else socket.emit('delete failed');
+	});
+	socket.on('disconnect', function () {
+		if(app_id) { 
+			console.log("Deleting app " + app_id);
+			delete games[app_id]; 
+			// TODO: Somehow notify players
+		}
 	});
 });
 
@@ -69,7 +83,7 @@ io.of('/api/control')
 			if(temp_game.players < temp_game.max) {
 				game = temp_game;
 				game.players++;
-				player_id = game.id++;
+				player_id = game.next_id++;
 				game.socket.emit('player join', player_id);
 				socket.emit('join ok', player_id);
 			} else socket.emit('join failed');
@@ -77,6 +91,7 @@ io.of('/api/control')
 	});
 	socket.on('leave',function() {
 		if(game) {
+			console.log("Player leaved " + game.id + ":" + player_id);
 			game.socket.emit('player leave', player_id);
 			game.players--;
 			game = null;
@@ -84,10 +99,16 @@ io.of('/api/control')
 			socket.emit('leave ok');
 		} else socket.emit('leave failed');
 	});
+	socket.on('disconnect', function () {
+		if(game) {
+			console.log("Player leaved " + game.id + ":" + player_id);
+			game.players--; 
+		}
+	});
 	socket.on('action',function(type, value) {
 		if(game) game.socket.emit('player action', player_id, type, value);
 		else socket.emit('push failed');
 	});
 });
 
-console.log("Express server listening on port %d in %s mode", app.address().port, app.settings.env);
+console.log("JoyJS server listening on port %d in %s mode", app.address().port, app.settings.env);
