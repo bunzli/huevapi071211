@@ -30,6 +30,13 @@ app.configure('production', function(){
 
 // Routes
 app.get('/', routes.index);
+
+app.get('/joystick', function(req, res){
+    res.render('joystick.jade', {
+        title: "El joystick"
+    });
+});
+
 app.listen(3000);
 
 /// GAME RELATED.
