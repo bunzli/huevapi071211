@@ -34,9 +34,24 @@ and open the template in the editor.
 		text-align: right;
 	    }
 	</style>
+	<script src="/socket.io/socket.io.js"></script>
 	<script>
 	    $(function() {
-		var JS=(function() {
+	    	
+	    var socket = io.connect('http://localhost/api/game');
+	    var connected = false;
+	    socket.on('connect', function () { 
+			socket.emit('create', 'test', 6);
+	    	socket.on('create ok', function (app_id) {
+	    		alert(app_id);	
+	    		connected = true;
+			});
+			socket.on('player join', function (player_id) {
+				alert(player_id);		
+			});
+	    });
+	    	
+		var JS= (function() {
 		    var js=function() {  
 		    };
 
@@ -48,6 +63,28 @@ and open the template in the editor.
 		    js.ticks=0;
 
 		    js.init=function() {
+
+			socket.on('player action', function (player_id, action, value) {
+				switch(action) {
+				case 'move_up':
+					js.characterXY.y-=js.speed; 
+					break;
+				case 'move_down':
+					js.characterXY.y+=js.speed; 
+					break;
+				case 'move_right':
+					js.characterXY.x+=js.speed; 
+					break;
+				case 'move_left':
+					js.characterXY.x-=js.speed;
+					break;
+				case 'button_A':
+				case 'button_B':
+					js.drawSprite={top:js.characterXY.x+'px',left:js.characterXY.y+'px'};
+					break;
+				}
+			});
+				
 			// init fps timer
 			setInterval(function() {js.tick()}, js.tickDelay);
 			setInterval(function() {js.spriteDraw()}, 100)
@@ -76,6 +113,7 @@ and open the template in the editor.
 			js.drawSprite=false;
 		    };
 		    js.tick = function() {
+		    	
 			/*
 			 * left arrow: 37 
 			 * up arrow: 38
@@ -84,12 +122,12 @@ and open the template in the editor.
 			 */
 
 			if(js.keys[32]) js.drawSprite={top:js.characterXY.x+'px',left:js.characterXY.y+'px'};
-			if(js.keys[37]) js.characterXY.y-=js.speed;
-			if(js.keys[38]) js.characterXY.x-=js.speed;
-			if(js.keys[39]) js.characterXY.y+=js.speed;
-			if(js.keys[40]) js.characterXY.x+=js.speed;
+			if(js.keys[37]) js.characterXY.x-=js.speed; 
+			if(js.keys[38]) js.characterXY.y-=js.speed;
+			if(js.keys[39]) js.characterXY.x+=js.speed;
+			if(js.keys[40]) js.characterXY.y+=js.speed;
 
-			js.character.css({top:js.characterXY.x+'px',left:js.characterXY.y+'px'});
+			js.character.css({top:js.characterXY.y+'px',left:js.characterXY.x+'px'});
 			$('#debug').html('(X: '+js.characterXY.x+ ', Y: '+js.characterXY.y+(js.drawSprite?', BUTTON':'')+') Ticks: '+js.ticks);
 			js.ticks++;
 		    };
