@@ -1,0 +1,119 @@
+<!--
+To change this template, choose Tools | Templates
+and open the template in the editor.
+-->
+<!DOCTYPE html>
+<html>
+<head>
+<title></title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<script type="text/javascript" src="http://code.jquery.com/jquery-1.7.1.min.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+<style>
+    body { margin: 0; }
+    #canvas {
+		width: 800px;
+		height: 600px;
+		z-index: 1000;
+		position: relative;
+		background: black;
+		color: white;
+		overflow: hidden;
+    }	    
+    #debug {
+		color: white;
+		text-align: right;
+    }
+    .character {
+		position: absolute;
+		z-index: 1002;
+    }
+    .rainbow {
+		position: absolute;
+		z-index: 1001;
+    }
+</style>
+<script>
+
+// GLOBALS
+var PLAYERS = {},
+	FIELD_W = 800,
+	FIELD_Y = 600,
+	TICKS = 0;
+
+function tick() {
+	$.each(PLAYERS, function(_id, _player) {
+		_player.x += _player.x_speed;
+		_player.y += _player.y_speed;
+		_player.div.css({top:_player.y+'px',left:_player.x+'px'});
+	});
+	$('#debug').html('Ticks: ' + TICKS++);
+}
+
+/*if(js.drawSprite) {
+    $('#rainbow')
+    .clone()
+    .css(js.drawSprite)
+    .fadeIn('fast')
+    .appendTo('#canvas');
+}*/
+
+$(function() {
+  	
+	setInterval(tick, 100);
+	
+    var socket = io.connect('http://localhost/api/game');
+    socket.on('connect', function () { 
+		socket.emit('create', 'test', 6);
+    	socket.on('create ok', function (app_id) {
+    		$('#qr').attr("src", "https://chart.googleapis.com/chart?cht=qr&chs=150x150&chl=http://192.168.1.104:3000/joystick.html?" + app_id);
+		});
+    	
+    	// When a player joins, a new player object is created.
+		socket.on('player join', function (player_id) {
+			PLAYERS[player_id] = {
+				div : $('#character').clone().addClass("character").appendTo('#canvas').show(),
+				x: 0,
+				y: 0,
+				x_speed: 0,
+				y_speed: 0				
+			};
+		});
+    	
+    	// When a player leaves, its player object is discarded.
+		socket.on('player leave', function (player_id) {
+			PLAYERS[player_id].div.remove();
+			delete PLAYERS[player_id];
+		});
+    	
+    	// Action processing.
+		socket.on('player action', function (player_id, action, value) {
+			var player = PLAYERS[player_id];
+			switch(action) {
+			case 'stick':
+				player.x_speed = 10 * value.x;
+				player.y_speed = 10 * value.y;
+				break;
+			case 'button_A':
+			case 'button_B':
+				break;
+			}
+		});
+    });
+});
+
+</script>
+</head>
+<body>
+    <div id="character" style="display: none;">
+		<img src="http://nyan-cat.com/images/nyan-cat.gif" width="50" />
+    </div>
+    <div id="rainbow" style="display: none;">
+		<img src="http://realtors.friedlander2.com/images/RainbowFlagw.jpg" />
+    </div>
+	<div id="canvas">
+    	<div id="debug"></div>
+	</div>
+	<img id="qr" width="150" height="150"/>
+</body>
+</html>

@@ -1,0 +1,168 @@
+<html>
+<head>
+<meta http-equiv="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1.0; user-scalable=no;"/>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+
+// GLOBALS
+var CTRL_PADDING = 30,
+	SOCKET = null;
+
+function setup_joystick() 
+{
+	SF_WIDTH = $(window).width();
+	SF_HEIGHT = $(window).height();
+	//SF_PORTRAIT = (window.orientation % 180 == 0);
+	SF_PORTRAIT = (SF_HEIGHT > SF_WIDTH);
+	
+	// Generate surface.
+	$('#surface_bg').remove();
+	$('#surface').remove();
+	var $surface_bg = $('<canvas id="surface_bg" width="' + SF_WIDTH + '" height="' + SF_HEIGHT + '" style="position: absolute"/>')
+		.appendTo('body');
+	var $surface = $('<canvas id="surface" width="' + SF_WIDTH + '" height="' + SF_HEIGHT + '" style="position: absolute"/>')
+		.appendTo('body');
+		
+	// Recalculate control boxes (depending on orientation).
+	if(!SF_PORTRAIT) {
+		SF_STK_X = SF_WIDTH / 4;
+		SF_STK_Y = SF_HEIGHT / 2;
+		SF_STK_RD = Math.min(SF_STK_X - CTRL_PADDING, SF_STK_Y - CTRL_PADDING);
+		BTN_A_X1 = SF_WIDTH / 2 + CTRL_PADDING;
+		BTN_A_Y1 = CTRL_PADDING;
+		BTN_A_X2 = SF_WIDTH - CTRL_PADDING;
+		BTN_A_Y2 = SF_HEIGHT / 2 - CTRL_PADDING / 2;
+		BTN_B_X1 = BTN_A_X1;
+		BTN_B_Y1 = SF_HEIGHT / 2 + CTRL_PADDING / 2;
+		BTN_B_X2 = BTN_A_X2;
+		BTN_B_Y2 = SF_HEIGHT - CTRL_PADDING;
+	} else {
+		SF_STK_X = SF_WIDTH / 2;
+		SF_STK_Y = 3 * SF_HEIGHT / 4;
+		SF_STK_RD = Math.min(SF_STK_X - CTRL_PADDING, SF_HEIGHT / 4 - CTRL_PADDING);
+		BTN_A_X1 = CTRL_PADDING;
+		BTN_A_Y1 = CTRL_PADDING;
+		BTN_A_X2 = SF_WIDTH / 2 - CTRL_PADDING / 2;
+		BTN_A_Y2 = SF_HEIGHT / 2 - CTRL_PADDING;
+		BTN_B_X1 = SF_WIDTH / 2 + CTRL_PADDING / 2;
+		BTN_B_Y1 = BTN_A_Y1;
+		BTN_B_X2 = SF_WIDTH - CTRL_PADDING;
+		BTN_B_Y2 = BTN_A_Y2;
+	}
+	SF_STK_RD_SQ = SF_STK_RD * SF_STK_RD;
+	
+	// Paint controls.
+	var bg_context = $surface_bg[0].getContext('2d');
+	var sf_context = $surface[0].getContext('2d');
+
+	bg_context.lineWidth = 10;
+	bg_context.strokeStyle = "black";
+	
+	bg_context.fillStyle = "#8ED6FF";
+	bg_context.arc(SF_STK_X,SF_STK_Y,SF_STK_RD,0,2*Math.PI,false);
+	bg_context.fill();
+	bg_context.stroke();
+
+	bg_context.fillStyle = "#8ED6FF";
+	bg_context.fillRect(BTN_A_X1, BTN_A_Y1, BTN_A_X2-BTN_A_X1, BTN_A_Y2-BTN_A_Y1);
+	bg_context.strokeRect(BTN_A_X1, BTN_A_Y1, BTN_A_X2-BTN_A_X1, BTN_A_Y2-BTN_A_Y1);
+	bg_context.fillRect(BTN_B_X1, BTN_B_Y1, BTN_B_X2-BTN_B_X1, BTN_B_Y2-BTN_B_Y1);
+	bg_context.strokeRect(BTN_B_X1, BTN_B_Y1, BTN_B_X2-BTN_B_X1, BTN_B_Y2-BTN_B_Y1);
+	
+	// Setup events.
+	sf_context.fillStyle = "#FF0000";
+	$surface.bind('touchmove', function(_event) {
+		$.each(_event.originalEvent.targetTouches, function(_idx, _touchEv) {
+			if(BTN_A_X1 < _touchEv.pageX && _touchEv.pageX < BTN_A_X2
+					&& BTN_A_Y1 < _touchEv.pageY && _touchEv.pageY < BTN_A_Y2) {
+				
+			} else if(BTN_B_X1 < _touchEv.pageX && _touchEv.pageX < BTN_B_X2
+					&& BTN_B_Y1 < _touchEv.pageY && _touchEv.pageY < BTN_B_Y2) {
+				
+			} else {
+				var x_vec = _touchEv.pageX - SF_STK_X,
+					y_vec = _touchEv.pageY - SF_STK_Y;
+				if(x_vec*x_vec + y_vec*y_vec < SF_STK_RD_SQ) {
+					//sf_context.clearRect(0,0,SF_WIDTH,SF_HEIGHT);
+					sf_context.beginPath();
+					sf_context.arc(_touchEv.pageX,_touchEv.pageY,5,0,2*Math.PI,false);
+					sf_context.closePath();
+					sf_context.fill();
+					SOCKET.emit('action','stick',{x:x_vec/SF_STK_RD,y:y_vec/SF_STK_RD});
+				}
+			}
+		});
+	});
+	
+	/*$surface.bind('touchmove', function(event) {
+	//alert(event.originalEvent.touches.length);
+		$.each(event.originalEvent.targetTouches, function(_idx, _touchEv) {
+			sf_context.beginPath();
+			sf_context.arc(_touchEv.pageX,_touchEv.pageY,5,0,2*Math.PI,false);
+			sf_context.closePath();
+			sf_context.fill();
+		});
+	});	*/
+	
+	$surface.bind('touchend', function(_event) {
+	});
+}
+
+$(function () {	
+	document.addEventListener('touchstart', function(e){ e.preventDefault(); });
+	window.onresize = setup_joystick;
+	window.onorientationchange = setup_joystick;
+	setup_joystick();
+	
+	SOCKET = io.connect('/api/control');
+	SOCKET.on('connect', function () {
+		var app_id = window.location.href.substr(window.location.href.indexOf('?')+1);
+		SOCKET.emit('join', app_id);
+		SOCKET.on('join ok', function (player_id) {});
+		SOCKET.on('join failed', function () { alert('cuek!'); });
+	});	
+});
+
+
+	/*var socket = io.connect('http://localhost/api/control');
+	socket.on('connect', function () {
+		socket.emit('join', document.location.hash.substr(1));
+		socket.on('join ok', function (player_id) {
+			setInterval(function() {
+				socket.emit('action','move_down',1);	
+			},1000);
+		});
+		socket.on('join failed', function () {
+			alert('cuek!');
+		});
+	});*/
+	
+	/*var left = document.getElementById('left');
+	var right = document.getElementById('right');
+
+	left.addEventListener('touchmove', function(event) {
+	  // If there's exactly one finger inside this element
+	  if (event.targetTouches.length == 1) {
+	    var touch = event.targetTouches[0];
+	    // Place element where the finger is
+	    //obj.style.left = touch.pageX + 'px';
+	    //obj.style.top = touch.pageY + 'px';
+	    $("#text").html(touch.pageX);
+	  }
+	}, false);
+
+	right.addEventListener('touchmove', function(event) {
+	  // If there's exactly one finger inside this element
+	  if (event.targetTouches.length == 1) {
+	    var touch = event.targetTouches[0];
+	    // Place element where the finger is
+	    //obj.style.left = touch.pageX + 'px';
+	    //obj.style.top = touch.pageY + 'px';
+	    $("#text_2").html(touch.pageX);
+	  }
+	}, false);*/
+</script>
+</head>
+<body style="margin:0;padding:0; position: absolute"></body>
+</html>

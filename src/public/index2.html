@@ -1,0 +1,168 @@
+!--
+To change this template, choose Tools | Templates
+and open the template in the editor.
+-->
+<!DOCTYPE html>
+<html>
+   <head>
+       <title></title>
+       <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+       <script type="text/javascript"
+src="http://code.jquery.com/jquery-1.7.1.min.js"></script>
+       <style>
+           body {
+               margin: 0;
+           }
+           #canvas {
+               width: 100%;
+               height: 100%;
+               z-index: 1000;
+               position: absolute;
+               background: black;
+               color: white;
+               overflow: hidden;
+           }
+           #character {
+               position: absolute;
+               z-index: 1002;
+           }
+           #rainbow {
+               position: absolute;
+               z-index: 1001;
+           }
+           #debug {
+               color: white;
+               text-align: right;
+           }
+       </style>
+       <!-- <script src="/socket.io/socket.io.js"></script> -->
+
+       <script>
+           $(function() {
+               /*
+           var socket = io.connect('http://localhost/api/game');
+           var connected = false;
+           socket.on('connect', function () {
+                       socket.emit('create', 'test', 6);
+               socket.on('create ok', function (app_id) {
+                       alert(app_id);
+                       connected = true;
+                       });
+                       socket.on('player join', function (player_id) {
+                               alert(player_id);
+                       });
+           });
+               */
+               var JS= (function() {
+                   alert('hey');
+                   var js=function() {
+                   };
+
+                   js.speed=10;
+                   js.tickDelay=25;
+                   js.ticks=0;
+
+                   js.keys={};
+                   js.characterXY=[{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0}];
+                   js.character=[{},{},{},{},{},{}];
+
+                   js.init=function() {
+
+                       /*
+                           socket.on('player action', function (player_id, action, value) {
+                                   switch(action) {
+                                   case 'move_up':
+                                           js.characterXY[player_id].y-=js.speed;
+                                           break;
+                                   case 'move_down':
+                                           js.characterXY[player_id].y+=js.speed;
+                                           break;
+                                   case 'move_right':
+                                           js.characterXY[player_id].x+=js.speed;
+                                           break;
+                                   case 'move_left':
+                                           js.characterXY[player_id].x-=js.speed;
+                                           break;
+                                   case 'button_A':
+                                   case 'button_B':
+                                           js.drawSprite={top:js.characterXY.x+'px',left:js.characterXY.y+'px'};
+                                           break;
+                                   }
+                           });
+                       }*/
+
+                       // init fps timer
+                       setInterval(function() {js.tick()}, js.tickDelay);
+                       setInterval(function() {js.spriteDraw()}, 100)
+
+                       // add event handlers
+                       $(document).keydown(function(e) {
+                           js.keys[e.keyCode]=true;
+                       });
+                       $(document).keyup(function(e) {
+                           js.keys[e.keyCode]=false;
+                       });
+
+
+                       for(var i=0;i<js.character.length;i++) {
+                           js.character.push($('#character').clone().appendTo('#canvas').fadeIn());
+                       }
+
+                       js.character=$('#character');
+                   };
+                   js.addSprite = function() {
+                       alert('sprite');
+                   };
+                   js.spriteDraw = function() {
+                       if(js.drawSprite) {
+                           $('#rainbow')
+                           .clone()
+                           .css(js.drawSprite)
+                           .fadeIn('fast')
+                           .appendTo('#canvas');
+                       }
+                       js.drawSprite=false;
+                   };
+                   js.tick = function() {
+
+                       /*
+                        * left arrow: 37
+                        * up arrow: 38
+                        * right arrow: 39
+                        * down arrow: 40
+                        */
+
+                       if(js.keys[32])
+js.drawSprite={top:js.characterXY.x+'px',left:js.characterXY.y+'px'};
+                       if(js.keys[37]) js.characterXY[0].x-=js.speed;
+                       if(js.keys[38]) js.characterXY[0].y-=js.speed;
+                       if(js.keys[39]) js.characterXY[0].x+=js.speed;
+                       if(js.keys[40]) js.characterXY[0].y+=js.speed;
+
+                       for(var i=0; i< js.character.length;i++) {
+                           js.character.css({top:js.characterXY[i].y+'px',left:js.characterXY[i].x+'px'});
+                           $('#debug').html('(X: '+js.characterXY[i].x+ ', Y:
+'+js.characterXY[i].y+(js.drawSprite?', BUTTON':'')+') Ticks:
+'+js.ticks);
+                       }
+                       js.ticks++;
+                   };
+
+                   return js;
+               })();
+               JS.init();
+           });
+       </script>
+   </head>
+   <body>
+       <div id="canvas">
+           <div id="debug"></div>
+           <div id="character" style="display: none;">
+               <img src="http://nyan-cat.com/images/nyan-cat.gif" width="50" />
+           </div>
+           <div id="rainbow" style="display: none;">
+               <img src="http://realtors.friedlander2.com/images/RainbowFlagw.jpg" />
+           </div>
+       </div>
+   </body>
+</html>
