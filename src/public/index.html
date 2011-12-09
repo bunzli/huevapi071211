@@ -12,9 +12,13 @@ and open the template in the editor.
 	    body {
 		margin: 0;
 	    }
+	    #qr {
+		position: absolute;
+		top: 600px;
+	    }
 	    #canvas {
-		width: 100%;
-		height: 100%;
+		width: 800px;
+		height: 600px;
 		z-index: 1000;
 		position: absolute;
 		background: black;
@@ -43,7 +47,7 @@ and open the template in the editor.
 	    socket.on('connect', function () { 
 			socket.emit('create', 'test', 6);
 	    	socket.on('create ok', function (app_id) {
-	    		alert(app_id);	
+	    		$('#qr').attr("src", "https://chart.googleapis.com/chart?cht=qr&chs=150x150&chl=http://192.168.1.104:3000/joystick.html?" + app_id);
 	    		connected = true;
 			});
 			socket.on('player join', function (player_id) {
@@ -148,5 +152,6 @@ and open the template in the editor.
 		<img src="http://realtors.friedlander2.com/images/RainbowFlagw.jpg" />
 	    </div>
 	</div>
+	<img id="qr" width="150" height="150"/>
     </body>
 </html>

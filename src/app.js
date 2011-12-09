@@ -30,13 +30,6 @@ app.configure('production', function(){
 
 // Routes
 app.get('/', routes.index);
-
-app.get('/joystick', function(req, res){
-    res.render('joystick.jade', {
-        title: "El joystick"
-    });
-});
-
 app.listen(3000);
 
 /// GAME RELATED.
@@ -109,6 +102,7 @@ io.of('/api/control')
 	socket.on('disconnect', function () {
 		if(game) {
 			console.log("Player leaved " + game.id + ":" + player_id);
+			game.socket.emit('player leave', player_id);
 			game.players--; 
 		}
 	});
@@ -118,4 +112,4 @@ io.of('/api/control')
 	});
 });
 
-console.log("JoyJS server listening on port %d in %s mode", app.address().port, app.settings.env);
+console.log("JAAS server listening on port %d in %s mode", app.address().port, app.settings.env);
