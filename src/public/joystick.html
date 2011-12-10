@@ -119,7 +119,7 @@ $(function () {
 	SOCKET.on('connect', function () {
 		var app_id = window.location.href.substr(window.location.href.indexOf('?')+1);
 		SOCKET.emit('join', app_id);
-		SOCKET.on('join ok', function (player_id) {});
+		SOCKET.on('join ok', function (player_id) { alert('hola!') });
 		SOCKET.on('join failed', function () { alert('cuek!'); });
 	});	
 });
